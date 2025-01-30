@@ -1,0 +1,31 @@
+middleware:
+  message_processing:
+    message_limit: '5'
+
+  timeouts:
+    main_for_each: '180000'
+    
+  postgres:
+    common:
+      host: 'localhost'
+      port: '5432'
+      username: 'postgres'
+      password: '12345'
+    objects:
+      database: 'objects'
+      host: '${middleware.postgres.common.host}'
+      port: '${middleware.postgres.common.port}'
+      username: '${middleware.postgres.common.username}'
+      password: '${middleware.postgres.common.password}'
+      url: 'jdbc:postgresql://${middleware.postgres.objects.host}:${middleware.postgres.objects.port}/${middleware.postgres.objects.database}' 
+      
+  http:
+    common:
+      host: 'localhost'
+      port: '8081'
+      path: ''
+    api:
+      host: '${middleware.http.common.host}'
+      port: '${middleware.http.common.port}'
+      path: '${middleware.http.common.path}/api'
+      url: '${middleware.http.api.host}:${middleware.http.api.port}${middleware.http.api.path}'

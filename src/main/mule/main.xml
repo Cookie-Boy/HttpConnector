@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
+	<configuration-properties doc:name="Configuration properties" doc:id="66f013cb-4aa3-40cc-9da7-96f31c5d4c75" file="conf/local.yaml" />
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="90622ef1-87b1-4607-847f-a63408b2e00c" basePath="${middleware.http.common.path}" >
+		<http:listener-connection host="0.0.0.0" port="${middleware.http.api.port}" />
+	</http:listener-config>
+	<db:config name="Postgres_OBJECTS_Config" doc:name="Database Config" doc:id="4f76ffd6-77e4-4f2f-bbe9-cfd42629fd84" >
+			<db:generic-connection url="${middleware.postgres.objects.url}" driverClassName="org.postgresql.Driver" user="${middleware.postgres.objects.username}" password="${middleware.postgres.objects.password}" />
+	</db:config>
+	<flow name="mainFlow" doc:id="9428c630-3346-480f-bee2-f3275c31bbab" >
+		<http:listener doc:name="Listener" doc:id="911484d6-ecf8-4550-ab97-3ed27e4f62aa" config-ref="HTTP_Listener_config" path="${middleware.http.api.path}/*" allowedMethods="POST">
+			<non-repeatable-stream />
+		</http:listener>
+		<logger level="INFO" doc:name="[INFO] Начало работы mainFlow" doc:id="bb1c5685-ab10-4f63-b8b1-826ee8fbaaf3" message="Начало работы mainFlow"/>
+		<flow-ref doc:name="Создать схему в БД с определенным именем" doc:id="9a71a226-28ad-4fe1-99fe-13c9614ef919" name="createSchemaSubFlow"/>
+		<logger level="INFO" doc:name="[INFO] Конец работы mainFlow" doc:id="7475a737-3597-4b95-b19b-f5d6e24f9645" message="Конец работы mainFlow"/>
+		<error-handler >
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="35a8ac94-19f8-4a7d-a7a4-1a9798019800" >
+				<flow-ref doc:name="Вызов errorSubFlow" doc:id="f36c38c5-a47d-4512-b5fd-f2a51eba4f66" name="errorSubFlow"/>
+			</on-error-propagate>
+		</error-handler>
+	</flow>
+</mule>
