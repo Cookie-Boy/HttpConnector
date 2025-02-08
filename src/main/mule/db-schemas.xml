@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd">
+	<sub-flow name="createSchemaSubFlow" doc:id="9f31b179-6bbc-42ff-997d-df439a1ce446" >
+		<logger level="INFO" doc:name="[INFO] Начало работы createSchemaSubFlow" doc:id="11130a95-29ae-4e90-97c8-b9e3308a3a7f" message="#[output application/json&#10;---&#10;{&#10;	info: 'Начало работы createSchemaSubFlow',&#10;	elapsedTime: now() - vars.startTime&#10;}]" />
+		<db:execute-ddl doc:name="Создать схему в базе данных" doc:id="d270ec31-1ad1-41c4-b20f-55bac600b3e9" config-ref="Postgres_OBJECTS_Config" >
+			<db:sql ><![CDATA[#[import modules::SqlUtils
+output text/plain
+---
+SqlUtils::createSchemaQuery(vars.schemaName)]]]></db:sql>
+		</db:execute-ddl>
+		<logger level="INFO" doc:name="[INFO] Результат запроса" doc:id="613fd4a7-456c-4cf4-a0aa-e1b22137ae7e" message="Количество созданных схем: #[payload]" />
+		<logger level="INFO" doc:name="[INFO] Конец работы createSchemaSubFlow" doc:id="023b2252-028d-4c6b-aa60-7d76ca383323" message="#[output application/json&#10;---&#10;{&#10;	info: 'Конец работы createSchemaSubFlow',&#10;	elapsedTime: now() - vars.startTime&#10;}]" />
+	</sub-flow>
+</mule>

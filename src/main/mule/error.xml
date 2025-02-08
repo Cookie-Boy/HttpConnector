@@ -4,6 +4,7 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd">
 	<sub-flow name="errorSubFlow" doc:id="d504bfc7-b4a3-4d14-83f8-ed3b4f662a6e" >
-		<logger level="ERROR" doc:name="[ERROR] Log Error" doc:id="9741e109-6b6e-49e5-a5d1-99a1bafcb057" message="#[output application/json&#10;---&#10;{&#10;	error: error,&#10;	info: vars.info default 'Общая ошибка'&#10;}]"/>
-	</sub-flow>
+		<logger level="ERROR" doc:name="[ERROR] Log Error" doc:id="9741e109-6b6e-49e5-a5d1-99a1bafcb057" message="#[output application/json&#10;---&#10;{&#10;	error: error.errorType.identifier,&#10;	info: vars.info default 'Общая ошибка'&#10;}]"/>
+	
+</sub-flow>
 </mule>

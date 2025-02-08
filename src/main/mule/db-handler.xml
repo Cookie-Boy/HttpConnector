@@ -4,15 +4,11 @@
 	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd">
-	<sub-flow name="createSchemaSubFlow" doc:id="f2c0c593-df3b-4a2a-8a25-42a2f1a3a167" >
-		<logger level="INFO" doc:name="[INFO] Начало работы createSchemaSubFlow" doc:id="d0c191d6-cc5b-410f-b3fe-8477f9950b87" message="Начало работы createSchemaSubFlow"/>
-		<set-variable value="#[output text/plain&#10;---&#10;attributes.requestUri replace (p('middleware.http.api.path') ++ '/') with '']" doc:name="Schema name" doc:id="73e53b9b-4b8a-459c-b741-c820df02d8e7" variableName="schemaName" />
-		<set-variable value="#[output text/plain&#10;---&#10;'CREATE SCHEMA IF NOT EXISTS ' ++ vars.schemaName]" doc:name="sqlQuery" doc:id="9200679f-8a9e-4cfb-a3a2-0f47d3965e68" variableName="sqlQuery"/>
-		<logger level="INFO" doc:name="[INFO] Полученное имя схемы" doc:id="cfbddf7d-a2ec-4147-922e-522f9d1e9d23" message="Schema name: #[vars.schemaName]" />
-		<db:execute-ddl doc:name="Создать схему в базе данных" doc:id="78f7ed5c-4097-4051-8a29-7dff735fd167" config-ref="Postgres_OBJECTS_Config">
-			<db:sql ><![CDATA[#[vars.sqlQuery]]]></db:sql>
-		</db:execute-ddl>
-		<logger level="INFO" doc:name="Logger" doc:id="c1b2ea15-3263-41c2-8431-7d67a691d5c2" message="result: #[payload]"/>
-		<logger level="INFO" doc:name="[INFO] Конец работы createSchemaSubFlow" doc:id="2a070cfb-db17-46fb-af50-45b8a52ab7e7" message="Конец работы createSchemaSubFlow"/>		
+	<sub-flow name="dbHandlerFlow" doc:id="569d56bd-27fc-46be-af3d-ee72b9d80ffd" >
+		<logger level="INFO" doc:name="[INFO] Начало работы dbHandlerSubFlow" doc:id="7e58005e-584d-4d64-9513-371b4c627914" message="#[output application/json&#10;---&#10;{&#10;	info: 'Начало работы dbHandlerSubFlow',&#10;	elapsedTime: now() - vars.startTime&#10;}]"/>
+		<flow-ref doc:name="Создать схему в БД с определенным именем" doc:id="625309fa-9015-48d8-9734-05b6b2b83d35" name="createSchemaSubFlow" />
+		<flow-ref doc:name="Создать таблицы в схеме" doc:id="ae2fb162-1d00-4a7b-803f-32b209b191e3" name="createTablesSubFlow" />
+		<set-variable value="#[vars.tableNames[1]]" doc:name="Название таблицы для сохранения" doc:id="424c0cd2-5c65-49cc-9df4-c4df395325c6" variableName="tableName" />
+		<logger level="INFO" doc:name="[INFO] Конец работы dbHandlerSubFlow" doc:id="724e72b1-9f33-4688-8482-607a2debdd54" message="#[output application/json&#10;---&#10;{&#10;	info: 'Конец работы dbHandlerSubFlow',&#10;	elapsedTime: now() - vars.startTime&#10;}]"/>
 	</sub-flow>
 </mule>

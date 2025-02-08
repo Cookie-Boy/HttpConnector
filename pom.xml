@@ -65,6 +65,18 @@
 			<artifactId>postgresql</artifactId>
 			<version>42.7.5</version>
 		</dependency>
+		<dependency>
+			<groupId>org.mule.modules</groupId>
+			<artifactId>mule-json-module</artifactId>
+			<version>2.5.3</version>
+			<classifier>mule-plugin</classifier>
+		</dependency>
+		<dependency>
+			<groupId>org.mule.modules</groupId>
+			<artifactId>mule-aggregators-module</artifactId>
+			<version>1.1.2</version>
+			<classifier>mule-plugin</classifier>
+		</dependency>
 	</dependencies>
 
 	<repositories>
