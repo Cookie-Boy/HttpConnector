@@ -4,11 +4,20 @@
 	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd">
-	<sub-flow name="dbHandlerFlow" doc:id="569d56bd-27fc-46be-af3d-ee72b9d80ffd" >
-		<logger level="INFO" doc:name="[INFO] Начало работы dbHandlerSubFlow" doc:id="7e58005e-584d-4d64-9513-371b4c627914" message="#[output application/json&#10;---&#10;{&#10;	info: 'Начало работы dbHandlerSubFlow',&#10;	elapsedTime: now() - vars.startTime&#10;}]"/>
-		<flow-ref doc:name="Создать схему в БД с определенным именем" doc:id="625309fa-9015-48d8-9734-05b6b2b83d35" name="createSchemaSubFlow" />
-		<flow-ref doc:name="Создать таблицы в схеме" doc:id="ae2fb162-1d00-4a7b-803f-32b209b191e3" name="createTablesSubFlow" />
-		<set-variable value="#[vars.tableNames[1]]" doc:name="Название таблицы для сохранения" doc:id="424c0cd2-5c65-49cc-9df4-c4df395325c6" variableName="tableName" />
-		<logger level="INFO" doc:name="[INFO] Конец работы dbHandlerSubFlow" doc:id="724e72b1-9f33-4688-8482-607a2debdd54" message="#[output application/json&#10;---&#10;{&#10;	info: 'Конец работы dbHandlerSubFlow',&#10;	elapsedTime: now() - vars.startTime&#10;}]"/>
+	<sub-flow name="insertHandlerSubFlow" doc:id="569d56bd-27fc-46be-af3d-ee72b9d80ffd" >
+		<logger level="INFO" doc:name="[INFO] Начало работы insertHandlerSubFlow" doc:id="7e58005e-584d-4d64-9513-371b4c627914" message="#[import modules::LoggerUtils&#10;output application/json&#10;---&#10;{&#10;	info: 'Начало работы insertHandlerSubFlow',&#10;	elapsedTime: LoggerUtils::calculateDuration(vars.startTime, now())&#10;}]"/>
+		<set-variable value="#[import modules::SqlUtils&#10;output text/plain&#10;---&#10;SqlUtils::extractSchemaName(vars.uri, p('middleware.http.api.path'))]" doc:name="Название схемы" doc:id="235b2c2d-4820-4c39-8821-5821ffd73e62" variableName="schemaName" />
+		<set-variable value='#[output text/plain&#10;---&#10;"messages_" ++ now().year ++ "_" ++ now().quarter]' doc:name="Название таблицы" doc:id="1fdc371a-bfa4-4340-8cd6-61fab55a7b1b" variableName="tableName" />
+		<set-variable value="#[0]" doc:name="Измененные строки" doc:id="81635006-bc90-4a96-a026-03e211d83241" variableName="affectedRows" />
+		<flow-ref doc:name="Вставить записи в таблицу" doc:id="17045a3f-ed74-4654-bc32-aea721389086" name="insertDataSubFlow"/>
+		<set-payload value='#[output application/json&#10;---&#10;{&#10;  "topic": vars.schemaName,&#10;  "inserted_records": vars.affectedRows&#10;}]' doc:name="Установка результирующего payload" doc:id="b25ad923-e2d9-4c33-b8bc-d1f801fabf3a" />
+		<logger level="INFO" doc:name="[INFO] Конец работы insertHandlerSubFlow" doc:id="724e72b1-9f33-4688-8482-607a2debdd54" message="#[import modules::LoggerUtils&#10;output application/json&#10;---&#10;{&#10;	info: 'Конец работы insertHandlerSubFlow',&#10;	elapsedTime: LoggerUtils::calculateDuration(vars.startTime, now())&#10;}]"/>
+	</sub-flow>
+	<sub-flow name="tableHandlerSubFlow" doc:id="d6d7ae3a-0b96-4a97-ad94-9b88c12fb52b" >
+		<logger level="INFO" doc:name="[INFO] Начало работы tableHandlerSubFlow" doc:id="82a03fcd-a464-4566-b72c-228c57dcfcff" message="#[import modules::LoggerUtils&#10;output application/json&#10;---&#10;{&#10;	info: 'Начало работы tableHandlerSubFlow',&#10;	elapsedTime: LoggerUtils::calculateDuration(vars.startTime, now())&#10;}]" />
+		<set-variable value="#[import modules::SqlUtils&#10;output application/java&#10;---&#10;SqlUtils::generateTableNames(now().year, now().quarter)]" doc:name="Генерация названий таблиц" doc:id="bfe38c2c-aa89-49bc-a484-434e1e7f59f6" variableName="tableNames" />
+		<logger level="INFO" doc:name="[INFO] Названия таблиц" doc:id="afc44b82-42ab-4866-b844-6cb6190236bd" message='#[import modules::LoggerUtils&#10;output application/json&#10;---&#10;{&#10;	info: "Сгенерированные названия таблиц: " ++ (vars.tableNames joinBy ", "),&#10;	elapsedTime: LoggerUtils::calculateDuration(vars.startTime, now())&#10;}]' />
+		<flow-ref doc:name="Создать таблицы" doc:id="1cf1c924-0aac-41da-aa7c-4b1d70bac1b9" name="createTablesSubFlow"/>
+		<logger level="INFO" doc:name="[INFO] Конец работы tableHandlerSubFlow" doc:id="1d29c2d4-fc24-4277-9d77-33a7f2255fb2" message="#[import modules::LoggerUtils&#10;output application/json&#10;---&#10;{&#10;	info: 'Конец работы tableHandlerSubFlow',&#10;	elapsedTime: LoggerUtils::calculateDuration(vars.startTime, now())&#10;}]" />
 	</sub-flow>
 </mule>

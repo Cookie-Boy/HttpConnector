@@ -6,27 +6,27 @@
 http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/json/current/mule-json.xsd
 http://www.mulesoft.org/schema/mule/aggregators http://www.mulesoft.org/schema/mule/aggregators/current/mule-aggregators.xsd">
 	<sub-flow name="validateMessagesSubFlow" doc:id="19e774fc-d62a-41a7-9edf-427ee4e75c06" >
-		<logger level="INFO" doc:name="[INFO] Начало работы validateMessagesSubFlow" doc:id="8849e4a6-01b0-4b98-99bf-12005595b7a4" message="#[output application/json&#10;---&#10;{&#10;	info: 'Начало работы validateMessagesSubFlow',&#10;	elapsedTime: now() - vars.startTime&#10;}]" />
-		<set-variable value="#[output application/java 	&#10;---&#10;[]]" doc:name="Set Variable" doc:id="a0eaf612-8eb8-4d0a-87fa-9ebd16887a62" variableName="messages"/>
+		<logger level="INFO" doc:name="[INFO] Начало работы validateMessagesSubFlow" doc:id="8849e4a6-01b0-4b98-99bf-12005595b7a4" message="#[import modules::LoggerUtils&#10;output application/json&#10;---&#10;{&#10;	info: 'Начало работы validateMessagesSubFlow',&#10;	elapsedTime: LoggerUtils::calculateDuration(vars.startTime, now())&#10;}]" />
+		<set-variable value="#[output application/json	&#10;---&#10;[]]" doc:name="Валидные сообщения" doc:id="a0eaf612-8eb8-4d0a-87fa-9ebd16887a62" variableName="messages"/>
 		<foreach doc:name="For Each" doc:id="9e1c0833-25c7-4c1b-88b5-ed792a19e270" collection="#[vars.data]">
 			<try doc:name="Try" doc:id="6c27b944-d5d7-470d-8f86-fbdacae8a087" >
-				<json:validate-schema doc:name="Validate schema" doc:id="9e745533-0117-4c94-940d-e66851f95a33" schema="schemas/msg-schema.json" />
+				<json:validate-schema doc:name="Валидируем на основе JSON схемы" doc:id="9e745533-0117-4c94-940d-e66851f95a33" schema="schemas/msg-schema.json" />
 				<logger level="INFO" doc:name="Валидное сообщение" doc:id="da600e79-9de1-4b39-9c1b-86afaeb282e6" message="Валидное сообщение: #[payload]" />
-				<set-variable value="#[output application/java&#10;---&#10;vars.messages + payload]" doc:name="Добавляем объект в массив" doc:id="f2fab612-fe64-45f1-90b4-8645420fc1c0" variableName="messages" />
+				<set-variable value="#[output application/json&#10;---&#10;vars.messages + payload]" doc:name="Добавляем объект в массив" doc:id="f2fab612-fe64-45f1-90b4-8645420fc1c0" variableName="messages" />
 				<error-handler >
 					<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="9f5d31df-2cc8-4220-b6ba-ec24fd92e7cb" >
-						<set-variable value='#[output text/plain&#10;---&#10;"Ошибка при валидации сообщения"]' doc:name="Set Variable" doc:id="09e6d297-adc7-49e2-b990-7535c4135a34" variableName="info"/>
-						<flow-ref doc:name="Flow Reference" doc:id="1aca5154-41bd-40dc-9ff0-374ab6a4e660" name="errorSubFlow" />
+						<set-variable value='#[output text/plain&#10;---&#10;"Ошибка при валидации сообщения"]' doc:name="Имя ошибки" doc:id="09e6d297-adc7-49e2-b990-7535c4135a34" variableName="info"/>
+						<flow-ref doc:name="Ошибка при валидации" doc:id="1aca5154-41bd-40dc-9ff0-374ab6a4e660" name="errorSubFlow" />
 					</on-error-continue>
 				</error-handler>
 			</try>
 		</foreach>
-		<logger level="INFO" doc:name="[INFO] Конец работы validateMessagesSubFlow" doc:id="445d2aef-da2d-4c3c-8a16-d65c5e4da7bc" message="#[output application/json&#10;---&#10;{&#10;	info: 'Конец работы validateMessagesSubFlow',&#10;	elapsedTime: now() - vars.startTime&#10;}]" />
+		<logger level="INFO" doc:name="[INFO] Конец работы validateMessagesSubFlow" doc:id="445d2aef-da2d-4c3c-8a16-d65c5e4da7bc" message="#[import modules::LoggerUtils&#10;output application/json&#10;---&#10;{&#10;	info: 'Конец работы validateMessagesSubFlow',&#10;	elapsedTime: LoggerUtils::calculateDuration(vars.startTime, now())&#10;}]" />
 	</sub-flow>
 	<sub-flow name="transformMessagesSubFlow" doc:id="29fcaea2-8f32-4578-af7a-1c46be7747e8" >
-		<logger level="INFO" doc:name="[INFO] Начало работы transformMessagesSubFlow" doc:id="25236f76-b23d-4bc8-a3d1-c3f1837f6db5" message="#[output application/json&#10;---&#10;{&#10;	info: 'Начало работы transformMessagesSubFlow',&#10;	elapsedTime: now() - vars.startTime&#10;}]" />
+		<logger level="INFO" doc:name="[INFO] Начало работы transformMessagesSubFlow" doc:id="25236f76-b23d-4bc8-a3d1-c3f1837f6db5" message="#[import modules::LoggerUtils&#10;output application/json&#10;---&#10;{&#10;	info: 'Начало работы transformMessagesSubFlow',&#10;	elapsedTime: LoggerUtils::calculateDuration(vars.startTime, now())&#10;}]" />
 		<set-variable value="#[import modules::TransformUtils&#10;output application/json&#10;---&#10;TransformUtils::transformMessages(vars.messages, p('middleware.msg_process.batch_size') as Number)]" doc:name="Трансформируем все соощения" doc:id="76b398df-037a-4de8-ae99-9b84a19d0a64" variableName="messages"/>
 		<set-variable value="#[import modules::TransformUtils&#10;output application/json&#10;---&#10;TransformUtils::splitMessages(vars.messages)]" doc:name="Разбиваем сообщения на пачки по batch_size" doc:id="718102d4-3250-4528-ae66-6ac5b3a9714c" variableName="messages"/>
-		<logger level="INFO" doc:name="[INFO] Конец работы transformMessagesSubFlow" doc:id="981da993-cded-4491-88f0-b62326773f60" message="#[output application/json&#10;---&#10;{&#10;	info: 'Конец работы transformMessagesSubFlow',&#10;	elapsedTime: now() - vars.startTime&#10;}]" />
+		<logger level="INFO" doc:name="[INFO] Конец работы transformMessagesSubFlow" doc:id="981da993-cded-4491-88f0-b62326773f60" message="#[import modules::LoggerUtils&#10;output application/json&#10;---&#10;{&#10;	info: 'Конец работы transformMessagesSubFlow',&#10;	elapsedTime: LoggerUtils::calculateDuration(vars.startTime, now())&#10;}]" />
 	</sub-flow>
 </mule>

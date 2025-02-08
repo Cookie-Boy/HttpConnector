@@ -5,10 +5,7 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd">
 	<sub-flow name="insertDataSubFlow" doc:id="fe82c807-2050-4442-b3d5-84cdc53d6c6c" >
-		<logger level="INFO" doc:name="[INFO] Начало работы insertDataSubFlow" doc:id="ec6d9702-d5e9-4599-bc44-259036bb03bf" message="#[output application/json&#10;---&#10;{&#10;	info: 'Начало работы insertDataSubFlow',&#10;	elapsedTime: now() - vars.startTime&#10;}]" />
-		<set-variable value="#[import modules::SqlUtils&#10;output text/plain&#10;---&#10;SqlUtils::extractSchemaName(vars.uri, p('middleware.http.api.path'))]" doc:name="Название схемы" doc:id="acbe1cc2-a00a-427d-83eb-7b513fddfb73" variableName="schemaName"/>
-		<set-variable value='#["messages_" ++ now().year ++ "_" ++ now().quarter]' doc:name="Название таблицы" doc:id="0c4f0c19-76ea-4736-8845-bdbc5d539bf1" variableName="tableName"/>
-		<set-variable value="#[0]" doc:name="Измененные строки" doc:id="a1207049-556b-4b27-9bca-5c4f9701c6a5" variableName="affectedRows"/>
+		<logger level="INFO" doc:name="[INFO] Начало работы insertDataSubFlow" doc:id="ec6d9702-d5e9-4599-bc44-259036bb03bf" message="#[import modules::LoggerUtils&#10;output application/json&#10;---&#10;{&#10;	info: 'Начало работы insertDataSubFlow',&#10;	elapsedTime: LoggerUtils::calculateDuration(vars.startTime, now())&#10;}]" />
 		<foreach doc:name="For Each" doc:id="7f3de629-2b56-4e94-81ed-2c84e4c442a1" collection="#[vars.messages]">
 			<try doc:name="Try" doc:id="a59d303b-3aab-45cf-aa54-d0e67a27c2e8" >
 				<db:bulk-insert doc:name="Вставить пачку сообщений в таблицу" doc:id="afb7baa0-f093-4492-ba34-e8bdae2b9d6f" config-ref="Postgres_OBJECTS_Config">
@@ -17,16 +14,15 @@ output text/plain
 ---
 SqlUtils::insertMessagesQuery(vars.schemaName, vars.tableName)]]]></db:sql>
 				</db:bulk-insert>
-				<set-variable value="#[vars.affectedRows + sum(payload)]" doc:name="Обновить счетчик" doc:id="8895ea9f-3a09-4cdc-9c69-b44e578726ff" variableName="affectedRows"/>
+				<set-variable value="#[vars.affectedRows + sum(payload)]" doc:name="Обновить счетчик изменных строк" doc:id="8895ea9f-3a09-4cdc-9c69-b44e578726ff" variableName="affectedRows"/>
 				<error-handler >
-					<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="03fb4998-a606-42d4-8d14-7e679dc3ceee">
-						<flow-ref doc:name="Создать таблицы" doc:id="99541c22-d7c2-41fd-9f33-5665a0bfdf0a" name="createTablesSubFlow"/>
-						<flow-ref doc:name="Снова пытаемся сохранить данные" doc:id="92c9c49b-2f44-4fef-9aea-f0a958339b42" name="insertDataSubFlow"/>
+					<on-error-continue enableNotifications="true" logException="false" doc:name="On Error Continue" doc:id="2fcd367f-145b-4492-a38f-2630df28c4eb" >
+						<flow-ref doc:name="Создать таблицы" doc:id="99541c22-d7c2-41fd-9f33-5665a0bfdf0a" name="tableHandlerSubFlow" />
+						<flow-ref doc:name="Снова пытаемся сохранить данные" doc:id="92c9c49b-2f44-4fef-9aea-f0a958339b42" name="insertDataSubFlow" />
 					</on-error-continue>
 				</error-handler>
 			</try>
 		</foreach>
-		<set-payload value='#[output application/json&#10;---&#10;{&#10;  "topic": vars.schemaName,&#10;  "inserted_records": vars.affectedRows&#10;}]' doc:name="Установка результирующего payload" doc:id="9d990952-94a4-41b0-85d5-ce1042d0eee2" />
-		<logger level="INFO" doc:name="[INFO] Конец работы insertDataSubFlow" doc:id="9e989033-1ede-4876-8e3f-5a700163ab81" message="#[output application/json&#10;---&#10;{&#10;	info: 'Конец работы insertDataSubFlow',&#10;	elapsedTime: now() - vars.startTime&#10;}]" />
+		<logger level="INFO" doc:name="[INFO] Конец работы insertDataSubFlow" doc:id="9e989033-1ede-4876-8e3f-5a700163ab81" message="#[import modules::LoggerUtils&#10;output application/json&#10;---&#10;{&#10;	info: 'Конец работы insertDataSubFlow',&#10;	elapsedTime: LoggerUtils::calculateDuration(vars.startTime, now())&#10;}]" />
 	</sub-flow>
 </mule>

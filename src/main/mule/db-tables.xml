@@ -5,9 +5,7 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd">
 	<sub-flow name="createTablesSubFlow" doc:id="a542a59b-f3ed-407c-8d04-49701acde4a9" >
-		<logger level="INFO" doc:name="[INFO] Начало работы createTablesSubFlow" doc:id="1b0ba313-221c-4aa7-93cb-51662c8ecfc0" message="Начало работы createTablesSubFlow" />
-		<set-variable value="#[import modules::SqlUtils&#10;output application/java&#10;---&#10;SqlUtils::generateTableNames(now().year, now().quarter)]" doc:name="Генерация названий таблиц" doc:id="979fe462-a4f4-4428-a4e4-b211ebda8f8c" variableName="tableNames" />
-		<logger level="INFO" doc:name="[INFO] Названия таблиц" doc:id="b5ba41f7-bae2-489b-8dcc-a5e5fb78dca5" message="Сгенерированные названия таблиц: #[vars.tableNames]" />
+		<logger level="INFO" doc:name="[INFO] Начало работы createTablesSubFlow" doc:id="1b0ba313-221c-4aa7-93cb-51662c8ecfc0" message="#[import modules::LoggerUtils&#10;output application/json&#10;---&#10;{&#10;	info: 'Начало работы createTablesSubFlow',&#10;	elapsedTime: LoggerUtils::calculateDuration(vars.startTime, now())&#10;}]" />
 		<try doc:name="Try" doc:id="73f8cd8d-6d81-4d93-9875-f40d372b0760" >
 			<foreach doc:name="For Each Table Name" doc:id="c34eff20-6b96-48b6-8190-c3661ac61458" collection="#[vars.tableNames]">
 			<db:execute-ddl doc:name="Создать таблицу" doc:id="db414248-5531-4241-81b6-be5018b9f6d9" config-ref="Postgres_OBJECTS_Config">
@@ -16,15 +14,14 @@ output text/plain
 ---
 SqlUtils::createTableQuery(vars.schemaName, payload)]]]></db:sql>
 			</db:execute-ddl>
-			<logger level="INFO" doc:name="[INFO] Результат запроса" doc:id="46b4c6bd-7511-4ccd-be63-55daff5ac73f" message="Количество созданных таблиц: #[payload]" />
 		</foreach>
 			<error-handler >
-				<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="7a59cade-bad8-4822-b5ae-187963ff080c" >
-					<flow-ref doc:name="Создать схему" doc:id="ab0eab6a-2c32-493d-807d-53f52250b5bb" name="createSchemaSubFlow"/>
-					<flow-ref doc:name="Снова создаем таблицы" doc:id="77bbb908-4463-4300-843d-0782b063f51c" name="createTablesSubFlow"/>
+				<on-error-continue enableNotifications="true" logException="false" doc:name="On Error Continue" doc:id="a8fe51a0-7666-422c-bea3-ef5d9e144cbe" >
+					<flow-ref doc:name="Создать схему" doc:id="ab0eab6a-2c32-493d-807d-53f52250b5bb" name="createSchemaSubFlow" />
+					<flow-ref doc:name="Снова создаем таблицы" doc:id="77bbb908-4463-4300-843d-0782b063f51c" name="createTablesSubFlow" />
 				</on-error-continue>
 			</error-handler>
 		</try>
-		<logger level="INFO" doc:name="[INFO] Конец работы createTablesSubFlow" doc:id="4e65e849-c14b-4c5a-8bea-d9f56174fcd9" message="Конец работы createTablesSubFlow" />
+		<logger level="INFO" doc:name="[INFO] Конец работы createTablesSubFlow" doc:id="4e65e849-c14b-4c5a-8bea-d9f56174fcd9" message="#[import modules::LoggerUtils&#10;output application/json&#10;---&#10;{&#10;	info: 'Конец работы createTablesSubFlow',&#10;	elapsedTime: LoggerUtils::calculateDuration(vars.startTime, now())&#10;}]" />
 	</sub-flow>
 </mule>

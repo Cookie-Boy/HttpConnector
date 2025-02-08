@@ -5,14 +5,21 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd">
 	<sub-flow name="createSchemaSubFlow" doc:id="9f31b179-6bbc-42ff-997d-df439a1ce446" >
-		<logger level="INFO" doc:name="[INFO] Начало работы createSchemaSubFlow" doc:id="11130a95-29ae-4e90-97c8-b9e3308a3a7f" message="#[output application/json&#10;---&#10;{&#10;	info: 'Начало работы createSchemaSubFlow',&#10;	elapsedTime: now() - vars.startTime&#10;}]" />
-		<db:execute-ddl doc:name="Создать схему в базе данных" doc:id="d270ec31-1ad1-41c4-b20f-55bac600b3e9" config-ref="Postgres_OBJECTS_Config" >
-			<db:sql ><![CDATA[#[import modules::SqlUtils
+		<logger level="INFO" doc:name="[INFO] Начало работы createSchemaSubFlow" doc:id="11130a95-29ae-4e90-97c8-b9e3308a3a7f" message="#[import modules::LoggerUtils&#10;output application/json&#10;---&#10;{&#10;	info: 'Начало работы createSchemaSubFlow',&#10;	elapsedTime: LoggerUtils::calculateDuration(vars.startTime, now())&#10;}]" />
+		<try doc:name="Try" doc:id="35cc690b-6f6a-447f-b399-1f0165da470c" >
+			<db:execute-ddl doc:name="Создать схему в базе данных" doc:id="d270ec31-1ad1-41c4-b20f-55bac600b3e9" config-ref="Postgres_OBJECTS_Config">
+			<db:sql><![CDATA[#[import modules::SqlUtils
 output text/plain
 ---
 SqlUtils::createSchemaQuery(vars.schemaName)]]]></db:sql>
 		</db:execute-ddl>
-		<logger level="INFO" doc:name="[INFO] Результат запроса" doc:id="613fd4a7-456c-4cf4-a0aa-e1b22137ae7e" message="Количество созданных схем: #[payload]" />
-		<logger level="INFO" doc:name="[INFO] Конец работы createSchemaSubFlow" doc:id="023b2252-028d-4c6b-aa60-7d76ca383323" message="#[output application/json&#10;---&#10;{&#10;	info: 'Конец работы createSchemaSubFlow',&#10;	elapsedTime: now() - vars.startTime&#10;}]" />
+			<error-handler >
+				<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="15635a39-6057-4294-9fca-77ef9e1591f9" >
+					<set-variable value="#['Не удалось создать схему, возможно база данных не существует']" doc:name="База данных не существует" doc:id="4a3e2f8f-7f42-43c9-8393-205e73fea150" variableName="info"/>
+					<flow-ref doc:name="Ошибка создания схемы" doc:id="c9094b84-61b7-4f74-9c41-dc192b7e4494" name="errorSubFlow"/>
+				</on-error-propagate>
+			</error-handler>
+		</try>
+		<logger level="INFO" doc:name="[INFO] Конец работы createSchemaSubFlow" doc:id="023b2252-028d-4c6b-aa60-7d76ca383323" message="#[import modules::LoggerUtils&#10;output application/json&#10;---&#10;{&#10;	info: 'Конец работы createSchemaSubFlow',&#10;	elapsedTime: LoggerUtils::calculateDuration(vars.startTime, now())&#10;}]" />
 	</sub-flow>
 </mule>
